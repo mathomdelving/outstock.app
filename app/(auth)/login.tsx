@@ -45,8 +45,8 @@ export default function LoginScreen() {
       >
         <View style={styles.content}>
           <View style={styles.header}>
-            <Text style={styles.title}>Inventory</Text>
-            <Text style={styles.subtitle}>Sign in to your account</Text>
+            <Text style={styles.title}>Outstocked</Text>
+            <Text style={styles.subtitle}>Lala's inventory app</Text>
           </View>
 
           <View style={styles.form}>
