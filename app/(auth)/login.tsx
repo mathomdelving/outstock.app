@@ -9,7 +9,7 @@ import {
   Platform,
   Alert,
 } from 'react-native'
-import { Link, router } from 'expo-router'
+import { Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '@/contexts/AuthContext'
 import { COLORS } from '@/lib/constants'
@@ -32,9 +32,9 @@ export default function LoginScreen() {
 
     if (error) {
       Alert.alert('Error', error.message)
-    } else {
-      router.replace('/(app)/(tabs)')
     }
+    // On success, the onAuthStateChange listener will update state
+    // and the layout redirects will handle navigation automatically
   }
 
   return (

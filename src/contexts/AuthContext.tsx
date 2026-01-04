@@ -152,17 +152,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [fetchUserData])
 
   // Sign in with email and password
+  // Note: We don't set global loading state here - individual pages manage their own loading
+  // The onAuthStateChange listener will handle updating user/session state
   const signIn = async (email: string, password: string) => {
-    setState(prev => ({ ...prev, loading: true }))
-
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
     })
-
-    if (error) {
-      setState(prev => ({ ...prev, loading: false }))
-    }
 
     return { error }
   }
@@ -174,8 +170,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     organizationName: string,
     displayName?: string
   ) => {
-    setState(prev => ({ ...prev, loading: true }))
-
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -187,10 +181,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     })
 
-    if (error) {
-      setState(prev => ({ ...prev, loading: false }))
-    }
-
     return { error }
   }
 
@@ -201,8 +191,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     organizationId: string,
     displayName?: string
   ) => {
-    setState(prev => ({ ...prev, loading: true }))
-
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -214,16 +202,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
     })
 
-    if (error) {
-      setState(prev => ({ ...prev, loading: false }))
-    }
-
     return { error }
   }
 
   // Sign out
   const signOut = async () => {
-    setState(prev => ({ ...prev, loading: true }))
     await supabase.auth.signOut()
   }
 

@@ -10,7 +10,7 @@ import {
   Alert,
   ScrollView,
 } from 'react-native'
-import { Link, router } from 'expo-router'
+import { Link } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useAuth } from '@/contexts/AuthContext'
 import { COLORS } from '@/lib/constants'
@@ -50,14 +50,13 @@ export default function RegisterScreen() {
       if (error) {
         console.error('Signup error:', error)
         alert('Error: ' + error.message)
-      } else {
-        alert('Account created! You can now sign in.')
-        router.replace('/(app)/(tabs)')
+        setLoading(false)
       }
+      // On success, the onAuthStateChange listener will update state
+      // and the layout redirects will handle navigation automatically
     } catch (e) {
       console.error('Signup exception:', e)
       alert('An unexpected error occurred. Check the console.')
-    } finally {
       setLoading(false)
     }
   }

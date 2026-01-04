@@ -1,4 +1,3 @@
-import { useEffect } from 'react'
 import { Stack } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { View, ActivityIndicator, StyleSheet } from 'react-native'
@@ -7,10 +6,10 @@ import { AuthProvider, useAuth } from '@/contexts/AuthContext'
 import { COLORS } from '@/lib/constants'
 
 function RootLayoutNav() {
-  const { initialized, loading } = useAuth()
+  const { initialized } = useAuth()
 
-  // Show loading screen while initializing
-  if (!initialized || loading) {
+  // Show loading screen only during initial auth check
+  if (!initialized) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={COLORS.primary} />

@@ -28,16 +28,15 @@ export default function InviteScreen() {
   const [isSignUp, setIsSignUp] = useState(true)
 
   // Check if user is already authenticated (from magic link)
+  // If authenticated, the layout redirects will handle navigation automatically
   useEffect(() => {
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession()
 
       if (session?.user) {
         // User is authenticated - they came from magic link
-        // The trigger should have created their profile, just redirect to app
-        console.log('User already authenticated, redirecting...')
-        router.replace('/(app)/(tabs)')
-        return
+        // The layout redirects will handle navigation automatically
+        console.log('User already authenticated')
       }
 
       setCheckingAuth(false)
@@ -93,13 +92,12 @@ export default function InviteScreen() {
       },
     })
 
-    setLoading(false)
-
     if (error) {
+      setLoading(false)
       Alert.alert('Error', error.message)
-    } else {
-      router.replace('/(app)/(tabs)')
     }
+    // On success, the onAuthStateChange listener will update state
+    // and the layout redirects will handle navigation automatically
   }
 
   const handleSignIn = async () => {
@@ -142,8 +140,8 @@ export default function InviteScreen() {
       }
     }
 
-    setLoading(false)
-    router.replace('/(app)/(tabs)')
+    // On success, the onAuthStateChange listener will update state
+    // and the layout redirects will handle navigation automatically
   }
 
   if (loadingOrg || checkingAuth) {
