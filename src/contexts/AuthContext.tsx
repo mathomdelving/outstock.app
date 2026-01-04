@@ -35,15 +35,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch user profile and organization (non-blocking helper)
   const loadProfileData = async (userId: string) => {
     try {
-      const { data: profile, error: profileError } = await supabase
+      let { data: profile, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
         .single()
 
+      // If no profile exists, try to create one from user metadata
       if (profileError || !profile) {
-        console.log('No profile found for user:', userId)
-        return
+        console.log('No profile found, attempting to create from metadata...')
+        const { data: { user } } = await supabase.auth.getUser()
+
+        if (user?.user_metadata?.organization_id) {
+          const { data: newProfile, error: createError } = await supabase
+            .from('user_profiles')
+            .insert({
+              id: userId,
+              organization_id: user.user_metadata.organization_id,
+              email: user.email,
+              display_name: user.user_metadata.display_name || user.email?.split('@')[0],
+              role: user.user_metadata.invited_role || 'user',
+            })
+            .select()
+            .single()
+
+          if (createError) {
+            console.error('Error creating profile:', createError)
+            return
+          }
+          profile = newProfile
+          console.log('Created profile:', profile)
+        } else {
+          console.log('No organization_id in user metadata')
+          return
+        }
       }
 
       const { data: organization } = await supabase
