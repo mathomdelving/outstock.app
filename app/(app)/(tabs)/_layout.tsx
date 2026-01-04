@@ -61,15 +61,14 @@ export default function TabsLayout() {
           tabBarIcon: ({ focused }) => <TabIcon name="inventory" focused={focused} />,
         }}
       />
-      {isAdmin && (
-        <Tabs.Screen
-          name="admin"
-          options={{
-            title: 'Admin',
-            tabBarIcon: ({ focused }) => <TabIcon name="admin" focused={focused} />,
-          }}
-        />
-      )}
+      <Tabs.Screen
+        name="admin"
+        options={{
+          title: 'Admin',
+          tabBarIcon: ({ focused }) => <TabIcon name="admin" focused={focused} />,
+          href: isAdmin ? '/(app)/(tabs)/admin' : null,
+        }}
+      />
       <Tabs.Screen
         name="profile"
         options={{

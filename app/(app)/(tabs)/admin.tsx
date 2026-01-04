@@ -5,7 +5,12 @@ import { useAuth } from '@/contexts/AuthContext'
 import { COLORS } from '@/lib/constants'
 
 export default function AdminScreen() {
-  const { isAdmin } = useAuth()
+  const { isAdmin, initialized } = useAuth()
+
+  // Wait for auth to initialize before checking admin status
+  if (!initialized) {
+    return null
+  }
 
   // Redirect non-admins
   if (!isAdmin) {

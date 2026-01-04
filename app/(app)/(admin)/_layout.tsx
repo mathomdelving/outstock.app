@@ -6,8 +6,13 @@ import { COLORS } from '@/lib/constants'
 export default function AdminLayout() {
   const { isAdmin, initialized } = useAuth()
 
+  // Wait for auth to initialize
+  if (!initialized) {
+    return null
+  }
+
   // Redirect non-admins
-  if (initialized && !isAdmin) {
+  if (!isAdmin) {
     return <Redirect href="/(app)/(tabs)" />
   }
 
