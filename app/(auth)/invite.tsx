@@ -16,8 +16,9 @@ import { supabase } from '@/lib/supabase'
 import { COLORS } from '@/lib/constants'
 
 export default function InviteScreen() {
-  const { org } = useLocalSearchParams<{ org: string }>()
+  const params = useLocalSearchParams<{ org: string }>()
 
+  const [org, setOrg] = useState<string | null>(null)
   const [orgName, setOrgName] = useState<string | null>(null)
   const [loadingOrg, setLoadingOrg] = useState(true)
   const [checkingAuth, setCheckingAuth] = useState(true)
@@ -27,15 +28,30 @@ export default function InviteScreen() {
   const [loading, setLoading] = useState(false)
   const [isSignUp, setIsSignUp] = useState(true)
 
+  // Get org ID from URL params (expo-router) or parse URL directly (web fallback)
+  useEffect(() => {
+    let orgId = params.org
+
+    // Web fallback: parse URL directly
+    if (!orgId && typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search)
+      orgId = urlParams.get('org') || undefined
+      console.log('Parsed org from URL:', orgId)
+    }
+
+    if (orgId) {
+      setOrg(orgId)
+    } else {
+      setLoadingOrg(false)
+    }
+  }, [params.org])
+
   // Check if user is already authenticated (from magic link)
-  // If authenticated, the layout redirects will handle navigation automatically
   useEffect(() => {
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession()
 
       if (session?.user) {
-        // User is authenticated - they came from magic link
-        // The layout redirects will handle navigation automatically
         console.log('User already authenticated')
       }
 
@@ -45,21 +61,24 @@ export default function InviteScreen() {
     checkAuth()
   }, [])
 
-  // Fetch organization name
+  // Fetch organization name when we have org ID
   useEffect(() => {
-    async function fetchOrg() {
-      if (!org) {
-        setLoadingOrg(false)
-        return
-      }
+    if (!org) return
 
+    async function fetchOrg() {
+      console.log('Fetching organization:', org)
       const { data, error } = await supabase
         .from('organizations')
         .select('name')
         .eq('id', org)
         .single()
 
+      if (error) {
+        console.error('Error fetching org:', error)
+      }
+
       if (data) {
+        console.log('Found organization:', data.name)
         setOrgName(data.name)
       }
       setLoadingOrg(false)
