@@ -16,13 +16,25 @@ import { useAuth } from '@/contexts/AuthContext'
 import { COLORS } from '@/lib/constants'
 
 export default function SetPasswordScreen() {
-  const { user, needsPasswordSetup, completePasswordSetup } = useAuth()
+  const { user, initialized, needsPasswordSetup, completePasswordSetup } = useAuth()
 
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  // MUST wait for auth to initialize before making ANY routing decisions
+  if (!initialized) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={COLORS.primary} />
+        </View>
+      </SafeAreaView>
+    )
+  }
+
+  // Now initialized is true, we can safely check
   // If user doesn't need setup, redirect away
   if (!needsPasswordSetup && user) {
     router.replace('/(app)/(tabs)')
