@@ -18,7 +18,10 @@ export default function Root({ children }: { children: React.ReactNode }) {
         <meta property="og:image" content="https://outstocked.vercel.app/og-image.png" />
         <meta property="og:image:width" content="2816" />
         <meta property="og:image:height" content="1536" />
+        <meta property="og:image:type" content="image/png" />
         <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://outstocked.vercel.app" />
+        <meta property="og:site_name" content="Outstocked" />
 
         {/* Twitter Card */}
         <meta name="twitter:card" content="summary_large_image" />
