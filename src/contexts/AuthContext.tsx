@@ -195,37 +195,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (!isMounted) return
 
-        if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-          if (session?.user) {
-            // Check if invited user needing setup
-            const needsSetup = await checkNeedsPasswordSetup(
-              session.user.id,
-              session.user.user_metadata
-            )
+        try {
+          if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+            if (session?.user) {
+              // Check if invited user needing setup
+              let needsSetup = false
+              try {
+                needsSetup = await checkNeedsPasswordSetup(
+                  session.user.id,
+                  session.user.user_metadata
+                )
+              } catch (e) {
+                console.error('Error checking password setup:', e)
+              }
 
-            if (!isMounted) return
+              if (!isMounted) return
 
-            setState(prev => ({
-              ...prev,
-              session,
-              user: session.user,
-              initialized: true,
-              needsPasswordSetup: needsSetup,
-            }))
+              setState(prev => ({
+                ...prev,
+                session,
+                user: session.user,
+                initialized: true,
+                needsPasswordSetup: needsSetup,
+              }))
 
-            if (!needsSetup) {
-              loadProfileData(session.user.id)
+              if (!needsSetup) {
+                loadProfileData(session.user.id)
+              }
             }
+          } else if (event === 'SIGNED_OUT') {
+            setState({
+              session: null,
+              user: null,
+              profile: null,
+              organization: null,
+              initialized: true,
+              needsPasswordSetup: false,
+            })
           }
-        } else if (event === 'SIGNED_OUT') {
-          setState({
-            session: null,
-            user: null,
-            profile: null,
-            organization: null,
-            initialized: true,
-            needsPasswordSetup: false,
-          })
+        } catch (error) {
+          console.error('Auth state change error:', error)
+          if (isMounted) {
+            setState(prev => ({ ...prev, initialized: true }))
+          }
         }
       }
     )
