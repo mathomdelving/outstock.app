@@ -131,13 +131,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return false
   }
 
+  // Check if URL has auth tokens (invite/magic link)
+  const urlHasAuthTokens = () => {
+    if (typeof window === 'undefined') return false
+    const hash = window.location.hash
+    return hash.includes('access_token') || hash.includes('error')
+  }
+
   // Initialize auth on mount
   useEffect(() => {
     let isMounted = true
+    let initializedFromUrl = false
 
     const initialize = async () => {
       try {
-        // Get the current session
+        // If URL has auth tokens, let onAuthStateChange handle it
+        // Don't call getSession() yet as tokens may not be processed
+        if (urlHasAuthTokens()) {
+          console.log('URL has auth tokens, waiting for onAuthStateChange...')
+
+          // Set a timeout fallback in case onAuthStateChange doesn't fire
+          setTimeout(() => {
+            if (isMounted) {
+              setState(prev => {
+                // Only set initialized if still waiting
+                if (!prev.initialized) {
+                  console.log('Timeout: onAuthStateChange did not fire, initializing without session')
+                  return { ...prev, initialized: true }
+                }
+                return prev
+              })
+            }
+          }, 5000) // 5 second timeout
+
+          return // onAuthStateChange will set initialized
+        }
+
+        // No URL tokens, safe to check existing session
         const { data: { session }, error } = await supabase.auth.getSession()
 
         if (error) {
