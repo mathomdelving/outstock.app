@@ -438,12 +438,19 @@ export default function DashboardScreen() {
                   </Text>
                 </View>
                 <View style={styles.locationStatsRow}>
-                  {location.pendingRequests > 0 && (
-                    <View style={styles.locationRequestsBox}>
-                      <Text style={styles.locationRequestsCount}>{location.pendingRequests}</Text>
-                      <Text style={styles.locationRequestsLabel}>requests</Text>
-                    </View>
-                  )}
+                  <View style={[
+                    styles.locationRequestsBox,
+                    location.pendingRequests === 0 && styles.locationRequestsBoxEmpty
+                  ]}>
+                    <Text style={[
+                      styles.locationRequestsCount,
+                      location.pendingRequests === 0 && styles.locationRequestsCountEmpty
+                    ]}>{location.pendingRequests}</Text>
+                    <Text style={[
+                      styles.locationRequestsLabel,
+                      location.pendingRequests === 0 && styles.locationRequestsLabelEmpty
+                    ]}>requests</Text>
+                  </View>
                   <View style={styles.locationStats}>
                     <Text style={styles.locationQuantity}>{location.totalAssigned.toLocaleString()}</Text>
                     <Text style={styles.locationQuantityLabel}>units</Text>
@@ -712,14 +719,23 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
   },
+  locationRequestsBoxEmpty: {
+    backgroundColor: COLORS.success + '15',
+  },
   locationRequestsCount: {
     fontSize: 18,
     fontWeight: 'bold',
     color: COLORS.warning,
   },
+  locationRequestsCountEmpty: {
+    color: COLORS.success,
+  },
   locationRequestsLabel: {
     fontSize: 11,
     color: COLORS.warning,
+  },
+  locationRequestsLabelEmpty: {
+    color: COLORS.success,
   },
   // Request cards
   requestCard: {
