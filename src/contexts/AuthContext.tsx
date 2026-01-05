@@ -115,6 +115,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  // Check if user needs password setup (invited but no profile)
+  const checkNeedsPasswordSetup = async (userId: string, userMetadata: any): Promise<boolean> => {
+    // If user was invited (has invited_by), check if they have a profile
+    if (userMetadata?.invited_by) {
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('id', userId)
+        .single()
+
+      // No profile = needs to complete setup
+      return !profile
+    }
+    return false
+  }
+
   // Initialize auth on mount
   useEffect(() => {
     let isMounted = true
@@ -131,15 +147,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!isMounted) return
 
         if (session?.user) {
+          // Check BEFORE setting initialized if this is an invited user needing setup
+          const needsSetup = await checkNeedsPasswordSetup(
+            session.user.id,
+            session.user.user_metadata
+          )
+
+          if (!isMounted) return
+
           setState({
             session,
             user: session.user,
             profile: null,
             organization: null,
             initialized: true,
+            needsPasswordSetup: needsSetup,
           })
-          // Load profile data in background
-          loadProfileData(session.user.id)
+
+          // Only load profile if they don't need setup
+          if (!needsSetup) {
+            loadProfileData(session.user.id)
+          }
         } else {
           setState({
             session: null,
@@ -147,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             profile: null,
             organization: null,
             initialized: true,
+            needsPasswordSetup: false,
           })
         }
       } catch (error) {
@@ -161,20 +190,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log('Auth event:', event)
 
         if (!isMounted) return
 
         if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
           if (session?.user) {
+            // Check if invited user needing setup
+            const needsSetup = await checkNeedsPasswordSetup(
+              session.user.id,
+              session.user.user_metadata
+            )
+
+            if (!isMounted) return
+
             setState(prev => ({
               ...prev,
               session,
               user: session.user,
               initialized: true,
+              needsPasswordSetup: needsSetup,
             }))
-            loadProfileData(session.user.id)
+
+            if (!needsSetup) {
+              loadProfileData(session.user.id)
+            }
           }
         } else if (event === 'SIGNED_OUT') {
           setState({
@@ -183,6 +224,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             profile: null,
             organization: null,
             initialized: true,
+            needsPasswordSetup: false,
           })
         }
       }
